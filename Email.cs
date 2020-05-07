@@ -1,25 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
-using Outlook = Microsoft.Office.Interop.Outlook;
 
 /* dev5x.com (c) 2020
  * 
- * Email Class
+ * SMTP Email Class
  * Handles general email needs
 */
 
 namespace dev5x.StandardLibrary
 {
-    public class Email : BaseClass
+    public class SMTPMail : BaseClass
     {
         private readonly string _smtpServer = string.Empty;
         private readonly string _smtpUser = string.Empty;
         private readonly string _smtpPassword = string.Empty;
-        private readonly string _smtpPort = "25";
         private readonly bool   _useCredentials = false;
+
+        public int Port { get; set; } = 25; 
+        public bool UseSSL { get; set; } = false;
+        public string DisplayName { get; set; } = string.Empty;
 
         public enum MailFormat
         {
@@ -27,11 +30,7 @@ namespace dev5x.StandardLibrary
             mailText
         }
 
-        public Email()
-        {
-        }
-
-        public Email(string SmtpServer, string SmtpUser, string SmtpPassword)
+        public SMTPMail(string SmtpServer, string SmtpUser, string SmtpPassword)
         {
             try
             {
@@ -41,7 +40,12 @@ namespace dev5x.StandardLibrary
                 if (portNumberPos > 0)
                 {
                     _smtpServer = SmtpServer.Substring(0, portNumberPos);
-                    _smtpPort = SmtpServer.Substring(portNumberPos + 1);
+
+                    string port = SmtpServer.Substring(portNumberPos + 1);
+                    if (Utility.IsNumeric(port))
+                    {
+                        Port = Convert.ToInt32(port);
+                    }
                 }
                 else
                 {
@@ -60,13 +64,14 @@ namespace dev5x.StandardLibrary
             catch { }
         }
 
-        public bool SMTPSendMail(string[] MailTO, string[] MailCC, string[] MailBCC, string MailSubject, string MailBody, string[] MailAttachments, MailFormat MessageFormat)
+        public bool SendMail(List<string> MailTO, List<string> MailCC, List<string> MailBCC, string MailSubject, string MailBody, List<string> MailAttachments, MailFormat MessageFormat)
         {
             try
             {
                 // Send SMTP mail
                 using (MailMessage message = new MailMessage())
                 {
+                    // Get addresses
                     if (MailTO != null)
                     {
                         foreach (string to in MailTO)
@@ -100,7 +105,8 @@ namespace dev5x.StandardLibrary
                         }
                     }
 
-                    message.From = new MailAddress(_smtpUser);
+                    // Prepare message parts
+                    message.From = new MailAddress(_smtpUser, DisplayName);
 
                     if (MailSubject != null)
                     {
@@ -115,7 +121,7 @@ namespace dev5x.StandardLibrary
                     if (MessageFormat == MailFormat.mailHTML)
                     {
                         message.IsBodyHtml = true;
-                        message.Body = "<html><body><br />" + MailBody + "</body></html>";
+                        message.Body = "<html><body>" + MailBody + "</body></html>";
                     }
                     else
                     {
@@ -124,7 +130,7 @@ namespace dev5x.StandardLibrary
                         message.Body = MailBody;
                     }
 
-                    if (MailAttachments != null && MailAttachments.Length > 0)
+                    if (MailAttachments != null && MailAttachments.Count > 0)
                     {
                         foreach (string attachment in MailAttachments)
                         {
@@ -135,14 +141,14 @@ namespace dev5x.StandardLibrary
                         }
                     }
 
-                    SmtpClient smtpClient = new SmtpClient(_smtpServer);
+                    SmtpClient smtpClient = new SmtpClient(_smtpServer, Port);
 
                     if (_useCredentials)
                     {
                         smtpClient.Credentials = new NetworkCredential(_smtpUser, _smtpPassword);
+                        smtpClient.EnableSsl = UseSSL;
                     }
 
-                    smtpClient.Port = Convert.ToInt32(_smtpPort);
                     smtpClient.Send(message);
 
                     return true;
@@ -150,83 +156,8 @@ namespace dev5x.StandardLibrary
             }
             catch (Exception ex)
             {
-                SetErrorMessage("SMTPSendMail - " + ex.Message);
+                SetErrorMessage("SendMail - " + ex.Message);
                 return false;
-            }
-        }
-
-        public void OutlookMail(string[] FilePaths, string MailSubject, string MailBody)
-        {
-            try
-            {
-                // Create new Outlook mail message with attachments
-                Outlook.Application appOutlook = new Outlook.Application();
-                Outlook.MailItem mailItem = (Outlook.MailItem)appOutlook.CreateItem(Outlook.OlItemType.olMailItem);
-                string winTemp = Path.GetTempPath();
-                string[] tempFiles = new string[0];
-                int pos = MailBody.Length;
-                int cnt = 0;
-
-                if (FilePaths != null)
-                {
-                    tempFiles = new string[FilePaths.Length];
-                    pos += FilePaths.Length;
-
-                    foreach (string fullPath in FilePaths)
-                    {
-                        FileInfo fi = new FileInfo(fullPath);
-
-                        if (fi.Exists)
-                        {
-                            // Copy the file to the temp folder and update its location
-                            fi.CopyTo(Path.Combine(winTemp, fi.Name), true);
-                            tempFiles[cnt] = Path.Combine(winTemp, fi.Name);
-
-                            // Add attachment to email
-                            Outlook.Attachment attachment = mailItem.Attachments.Add(fullPath, Outlook.OlAttachmentType.olByValue, pos, fi.Name);
-
-                            pos--;
-                            cnt++;
-                        }
-                    }
-                }
-
-                // Set optional values
-                if (MailSubject != null && MailSubject.Length > 0)
-                {
-                    mailItem.Subject = MailSubject;
-                }
-
-                if (MailBody != null && MailBody.Length > 0)
-                {
-                    mailItem.Body = MailBody;
-                }
-
-                // Display message
-                mailItem.Display(false);
-
-                // Delete the files from the temp folder
-                foreach (string file in tempFiles)
-                {
-                    FileInfo fi = new FileInfo(file);
-
-                    if (fi.Exists)
-                    {
-                        // Change attribute to normal on read-only files
-                        if (fi.IsReadOnly)
-                        {
-                            fi.Attributes = FileAttributes.Normal;
-                        }
-
-                        // Delete temp file
-                        fi.Delete();
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                SetErrorMessage("OutlookMail - " + ex.Message);
             }
         }
     }

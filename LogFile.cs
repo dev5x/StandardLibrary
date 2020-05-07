@@ -35,7 +35,7 @@ namespace dev5x.StandardLibrary
                 FileInfo fi = new FileInfo(Path.Combine(_logPath, _logFile));
                 if (fi.Exists && fi.Length > 5120000)
                 {
-                    string archiveName = Path.Combine(_logPath, Path.GetFileNameWithoutExtension(_logFile) + DateTime.Now.ToString("_yyyyMMdd_hhmmss") + Path.GetExtension(_logFile));
+                    string archiveName = Path.Combine(_logPath, Path.GetFileNameWithoutExtension(_logFile) + Utility.GetDateStamp() + Path.GetExtension(_logFile));
                     fi.CopyTo(archiveName);
                     fi.Delete();
                     Post("Previous log archived to " + Path.GetFileName(archiveName));
