@@ -106,10 +106,6 @@ namespace dev5x.StandardLibrary
                     {
                         message.Subject = MailSubject;
                     }
-                    //else
-                    //{
-                    //    message.Subject = string.Empty;
-                    //}
 
                     if (MailBody == null)
                     {
