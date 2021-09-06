@@ -141,7 +141,7 @@ namespace dev5x.StandardLibrary
             // Decrypt string
             try
             {
-                if (Value.EndsWith(_encryptID))
+                if (Value.EndsWith(_encryptID) && Value.Length > 23)
                 {
                     return DecryptString(Value);
                 }
