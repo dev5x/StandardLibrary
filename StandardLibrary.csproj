@@ -5,11 +5,11 @@
     <RootNamespace>dev5x.StandardLibrary</RootNamespace>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>dev5x.pfx</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>4.0.5.0</AssemblyVersion>
-    <FileVersion>4.0.5.0</FileVersion>
+    <AssemblyVersion>4.0.6.0</AssemblyVersion>
+    <FileVersion>4.0.6.0</FileVersion>
     <AssemblyName>dev5x.StandardLibrary</AssemblyName>
     <Copyright>Copyright © 2021 dev5x, LLC</Copyright>
-    <Version>4.0.5</Version>
+    <Version>4.0.6</Version>
     <ApplicationIcon />
     <Win32Resource />
     <Company>dev5x, LLC</Company>
@@ -23,8 +23,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
   </ItemGroup>
 
 </Project>

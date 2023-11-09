@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-/* dev5x.com (c) 2020
+/* dev5x.com (c) 2019
  * 
  * Utility Class
  * Handles general functions
@@ -14,7 +14,7 @@ namespace dev5x.StandardLibrary
         public static bool IsNumeric(string Value)
         {
             // Return true if value is a number
-            return int.TryParse(Value, out _);
+            return int.TryParse(Value, out int num1);
         }
 
         public static void ShellExec(string AppFile, string ParmList)
