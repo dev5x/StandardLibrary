@@ -14,7 +14,7 @@ namespace dev5x.StandardLibrary
 {
     public sealed class Encryption : BaseClass
     {
-        private const string _pwd = "5kbsw@rbr#!";
+        private const string _pwd = "@rbr#!";
         private readonly byte[] _salt = new byte[] { 0x49, 0x51, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
 
         #region Public Methods
